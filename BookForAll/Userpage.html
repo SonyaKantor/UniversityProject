@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Books for all</title>
+        <link rel="stylesheet" href ="styles.css">  
+                <script type="text/javascript" src="javascripts.js"></script>
+    </head>
+    <header>
+        <div> 
+                        
+            <ul>
+                <li><a href="index.html"><img src="images/home-page.png" height="30px" width="30px" alt="Main-page"></a></li>
+                <li><a href="Help-page.html"><img src="images/help-sign.png" height = 30px width = 30px alt = "Help"> Help</a> </li>
+                <li></li><li></li><li></li><li></li><li></li>
+                <li><a href="Userpage.html"><img src="images/log-signup1.png" height = 30px width = 30px alt="Login/Signup">User page</a></li>
+                <li><a href="Cart.html"><img src="images/s-cart.png" height = 30px width = 30px alt = "Cart">Cart</a> </li>        
+                <li id = "user" class="user"></li>
+                <script src="scripts.js"></script>  
+            </ul>
+            <div>          
+
+                <form>
+                    <img class="logo" src = "images/logo.png" height ="60px" width ="120px"  >                    
+                     <input id="search_v" type="Search" placeholder ="Search for Book title/Author/ISBN">
+                    <button class="search" type ="button" id="search">Search</button> 
+                                    <script>
+                    
+                        
+                    var b = document.getElementById("search");
+                    b.addEventListener("click", search);               
+                    function search(){
+                     var sear = document.getElementById("search_v").value;   
+                                         console.log(sear); 
+                     window.localStorage.setItem("sear",JSON.stringify(sear));
+                     window.location.href="search_result.html";
+//                        doCompletion("search", "search="+sear);
+                    }
+                </script> 
+                </form>
+            </div>
+        </div>
+    </header>
+    <body onload='logged()'>
+        <script>
+//            console.log(window.localStorage.getItem("user"));
+        </script>
+        <div class=login>
+            <h3 id = "user">Welcome</h3>
+            <h3>History of orders</h3>
+            <h4 id="orders">You did not order anything yet.</h4>
+            <h3>History of requests</h3>
+            <h4 id="requests">You did not request anything yet.</h4>           
+            <h3><a href="updatep.html">Update personal information</a></h3>
+        </div>
+    </body>
+    <footer class="footer_c">
+        <div></div>
+        <div>
+            <h5>About us </h5>
+            <p><a href="Site-map.html"> Site map</a><p>
+            <p><a href="Contact-us.html">Contact us</a><p>
+            <p><a href="Log-in.html">Login/Signup</a><p>
+        </div>
+        <div>
+            <h5>Need a help?</h5>
+        </div>
+        <div>
+            <h5>Shipping </h5>
+        </div>
+    </footer>
+</html>

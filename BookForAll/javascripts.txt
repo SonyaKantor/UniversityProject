@@ -1,0 +1,337 @@
+
+var req;
+var isIE;
+var completeField;
+var completeTable;
+var autoRow;
+var action;
+function logged(){
+    if(window.localStorage.getItem("user")===null){
+        document.getElementById("user").innerHTML = "Welcome,Guest ";
+    }
+    else{
+        document.getElementById("user").innerHTML = "Welcome, "+JSON.parse(window.localStorage.getItem("user"));
+        
+    }
+    
+} 
+function bday(){
+    logged()
+    var day = '';
+    for(var i = 1;i<=31;i++){
+      day += '<option value = ' +i + '>'+i+'</option>'; 
+    }
+    document.getElementById("Day").innerHTML=day;
+    var year = '';
+    for(var i = 1900;i<=2021;i++){
+      year += '<option value = ' +i + '>'+i+'</option>'; 
+    }
+    document.getElementById("Year").innerHTML=year;
+};
+function quantity(){
+    logged()
+    var q = '';
+    for( var i = 1; i<=10;i++){
+        q+= '<option value = ' +i + '>'+i+'</option>';
+    }
+    console.log(q);
+    document.getElementById("quan").innerHTML = q;
+};
+function init() {
+    console.log("INIT");
+//    completeField = document.getElementById("complete-field");
+//    console.log(completeField);
+    doCompletion();
+}
+
+function doCompletion(p_action, p_param) {
+//        var url = "http://localhost:8080/BooksForAll/Books?action=list_books";
+    var url = "/BooksForAll/Servlet";
+    url += "?action=" + p_action;
+    console.log(p_action);
+    if (p_param !== null) {
+        url = url + "&&" + p_param;
+    }
+    console.log(url);
+    action = p_action;
+    req = new XMLHttpRequest();
+    console.log(req);
+    req.open("GET", url, true);
+    console.log(req);
+    req.onreadystatechange = callback;
+    req.send(null);
+
+
+}
+function choose(ID){
+    window.localStorage.setItem("book_id",JSON.stringify(ID));
+    window.location.href = "book-details.html";
+}
+
+function callback() {
+    if (req.readyState === 4) {
+        if (req.status === 200) {
+             console.log('callback'+action+req.responseXML);
+            parseMessages(req.responseXML);
+
+        }
+    }
+}
+
+function initRequest() {
+    if (window.XMLHttpRequest) {
+        if (navigator.userAgent.indexOf('MSIE') != -1) {
+            isIE = true;
+        }
+        return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        isIE = true;
+        return new ActiveXObject("Microsoft.XMLHTTP");
+    }
+}
+
+
+function parseMessages(responseXML) {
+    if (responseXML == null) {
+        return false;
+    } else {
+        if (action === "list_books") {
+            var list_books = responseXML.getElementsByTagName("list_books")[0];
+            var out = "";
+            var out2 ="";
+            var l = (list_books.childNodes.length)/2;
+            console.log(l);
+            console.log(list_books);
+            if (list_books.childNodes.length > 0) {
+                console.log(list_books.childNodes);
+                for (loop = 0; loop < l; loop++) {
+                    var book = list_books.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    out += '<div class="item" id=book onclick=choose('+ID.childNodes[0].nodeValue+')><img src=' + Image.childNodes[0].nodeValue + " height = 200px width = 170px>\n\
+        <div>" +  Title.childNodes[0].nodeValue + "</div> <div>" + Author.childNodes[0].nodeValue + "</div><div>" + Price.childNodes[0].nodeValue + "$</div>\n\
+<div class='non' id='book_id'> "+ID.childNodes[0].nodeValue+"</div></div>";         
+                    
+                };
+                for (loop = l; loop < list_books.childNodes.length; loop++) {
+                    var book = list_books.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    out2 += '<div class="item" id=book onclick=choose('+ID.childNodes[0].nodeValue+')><img src=' + Image.childNodes[0].nodeValue + " height = 200px width = 170px>\n\
+        <div>" +  Title.childNodes[0].nodeValue + "</div> <div>" + Author.childNodes[0].nodeValue + "</div><div>" + Price.childNodes[0].nodeValue + "$</div>\n\
+<div class='non id='book_id'> "+ID.childNodes[0].nodeValue+"</div></div>";            
+                }
+                document.getElementById("container").innerHTML = out;                
+                document.getElementById("container2").innerHTML = out2;
+                }
+            }
+             else if (action === "cart") {
+            var cart_book = responseXML.getElementsByTagName("cart")[0];
+            var total = 0;
+            console.log(typeof(total));
+            var out = "";           
+            var l = cart_book.childNodes.length;
+            console.log(l);
+            if (cart_book.childNodes.length > 0) {
+                console.log(cart_book.childNodes);
+                for (loop = 0; loop < l; loop++) {
+                    var book = cart_book.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    var Amount = book.getElementsByTagName("Amount")[0];
+                    total+=parseFloat(Price.childNodes[0].nodeValue);
+                    console.log(typeof(total));
+                    out += '<div id=book onclick=choose('+ID.childNodes[0].nodeValue+')><img src=' + Image.childNodes[0].nodeValue + " height = 200px width = 170px></a></div>\n\
+        <div><p>" +  Title.childNodes[0].nodeValue + "</p><p>" + Author.childNodes[0].nodeValue + "</p><p>" + Price.childNodes[0].nodeValue + "$</p></div>\n\
+</div></div><div><p><button class ='search' onclick=doCompletion('remove','book_id="+ID.childNodes[0].nodeValue+"&&ID="+JSON.parse(window.localStorage.getItem("userid"))+"')>remove</button>  </p>\n\
+</div>";         
+
+                };
+                  total=total.toFixed(2);
+                document.getElementById("tot").innerHTML = "Total: "+ total+"$";
+                   console.log(out);             
+                document.getElementById("cart").innerHTML = out;                
+                }
+            }    
+           else if (action === "remove") {
+
+            var remove = responseXML.getElementsByTagName("remove")[0];
+         
+            var total = 0;
+         
+            var out = "";           
+            var l = remove.childNodes.length;
+            console.log('remove'+l);
+            if (remove.childNodes.length > 0) {
+                console.log(remove.childNodes);
+                for (loop = 0; loop < l; loop++) {
+                    var book = remove.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    var Amount = book.getElementsByTagName("Amount")[0];
+                    total+=parseFloat(Price.childNodes[0].nodeValue);
+                    
+                    console.log(typeof(total));
+                    out += '<div id=book onclick=choose('+ID.childNodes[0].nodeValue+')><img src=' + Image.childNodes[0].nodeValue + " height = 200px width = 170px></a></div>\n\
+        <div><p>" +  Title.childNodes[0].nodeValue + "</p><p>" + Author.childNodes[0].nodeValue + "</p><p>" + Price.childNodes[0].nodeValue + "$</p></div>\n\
+</div></div><div><p><button class ='search' onclick=doCompletion('remove',bookid="+ID.childNodes[0].nodeValue+"&&ID="+JSON.parse(window.localStorage.getItem("userid"))+")>remove</button>  </p>\n\
+</div>";         
+
+                };
+                 console.log('reloat_ot'+out); 
+                total=total.toFixed(2);
+                console.log(total);
+                window.location.reload();
+                document.getElementById("tot").innerHTML = "Total: "+ total+"$";
+                   console.log('reloat_ot'+out);             
+                document.getElementById("cart").innerHTML = out;                
+                }
+            }        
+        else if (action === "book") {
+            var list_books = responseXML.getElementsByTagName("book_detail")[0];
+            console.log(list_books);
+            if (list_books.childNodes.length > 0) {
+                console.log(list_books.childNodes);
+                for (loop = 0; loop < list_books.childNodes.length; loop++) {
+                    var book = list_books.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    var About = book.getElementsByTagName("About")[0];
+                    var Year_published = book.getElementsByTagName("Year_published")[0];
+                    var Format = book.getElementsByTagName("Format")[0]; 
+                    var Amount = book.getElementsByTagName("Amount")[0]; 
+                    var Publisher = book.getElementsByTagName("Publisher")[0]; 
+                    var ISBN = book.getElementsByTagName("ISBN")[0]; 
+                    var Genre = book.getElementsByTagName("Genre")[0]; 
+                    document.getElementById("Author").innerHTML = "By: "+Author.childNodes[0].nodeValue;  
+                    document.getElementById("Author2").innerHTML = "Author: "+Author.childNodes[0].nodeValue;
+                    document.getElementById("Title").innerHTML = Title.childNodes[0].nodeValue;
+                    document.getElementById("image").innerHTML = "<img src ="+Image.childNodes[0].nodeValue+">";
+                    document.getElementById("price").innerHTML = Price.childNodes[0].nodeValue +"$";
+                    document.getElementById("Desc").innerHTML = About.childNodes[0].nodeValue;
+                    document.getElementById("pub_year").innerHTML = "Published: "+ Year_published.childNodes[0].nodeValue;
+                    document.getElementById("format").innerHTML = "Format: "+Format.childNodes[0].nodeValue;
+                    document.getElementById("amount").innerHTML = "Left: "+Amount.childNodes[0].nodeValue;
+                    document.getElementById("publisher").innerHTML = "Publisher: "+Publisher.childNodes[0].nodeValue;
+                    document.getElementById("ISBN").innerHTML ="ISBN13: "+ ISBN.childNodes[0].nodeValue;
+                    document.getElementById("genre").innerHTML =Genre.childNodes[0].nodeValue;
+                    document.getElementById("Genre2").innerHTML ="Genre: "+Genre.childNodes[0].nodeValue;
+                    window.localStorage.setItem("amount",Amount.childNodes[0].nodeValue);
+                }
+            }
+        }
+        else if(action==="search"){
+            var res = responseXML.getElementsByTagName("search")[0];
+            var out = "";
+            if (res.childNodes.length > 0) {
+                console.log(res.childNodes);
+                document.getElementById("total").innerHTML= "Showing " + res.childNodes.length + "  results"
+                for (loop = 0; loop < res.childNodes.length; loop++) {
+                    var book = res.childNodes[loop];
+                    var ID = book.getElementsByTagName("ID")[0];
+                    var Author = book.getElementsByTagName("Author")[0];
+                    var Title = book.getElementsByTagName("Title")[0];
+                    var Image = book.getElementsByTagName("Image")[0];
+                    var Price = book.getElementsByTagName("Price")[0];
+                    out += '<div class="item" id=book onclick=choose('+ID.childNodes[0].nodeValue+')><img src=' + Image.childNodes[0].nodeValue + " height = 200px width = 170px>\n\
+        <div>" +  Title.childNodes[0].nodeValue + "</div> <div>" + Author.childNodes[0].nodeValue + "</div><div>" + Price.childNodes[0].nodeValue + "$</div>\n\
+<div class='non' id='book_id'> "+ID.childNodes[0].nodeValue+"</div></div>";              
+                }
+                
+               // console.log()
+                document.getElementById("container").innerHTML = out;               
+            }
+        }
+        else if (action === "login") {
+            var login = responseXML.getElementsByTagName("Login")[0];
+            var ID = login.getElementsByTagName("ID")[0];
+            if (ID.childNodes[0].nodeValue > 0) {
+                var Name = login.getElementsByTagName("Name")[0];
+                window.localStorage.setItem("user",JSON.stringify(Name.childNodes[0].nodeValue));
+                window.localStorage.setItem("userid",JSON.stringify(ID.childNodes[0].nodeValue));
+                window.location.href = "Userpage.html";
+            } else {
+                console.log("no");
+                document.getElementById("nologin").innerHTML = "One of the fields is wrong. Try again";
+            }
+            user_name = 'User';
+            document.getElementById('user').innerHTML = user_name;
+            console.log(user_name);
+        }      else if (action === "new_order") {
+            var new_order = responseXML.getElementsByTagName("<new_order>")[0];
+            var order = login.getElementsByTagName("Order")[0];
+            console.log(order.childNodes[0].nodeValue);
+            if (order.childNodes[0].nodeValue !== 0) {
+                window.location.href = "Userpage.html";
+            } else {
+                console.log("no");
+                document.getElementById("nologin").innerHTML = "One of the fields is wrong. Try again";
+            }
+            user_name = 'User';
+            document.getElementById('user').innerHTML = user_name;
+        } 
+         else if (action === "order_detail") {
+            var reg = responseXML.getElementsByTagName("order_detail")[0];
+            var result = reg.getElementsByTagName("Result")[0];
+            if (result.childNodes[0].nodeValue == 1) {
+                document.getElementById("noreg").innerHTML = '<p class = "noreg">Email is already registered. </p>\n\
+           <p class = "noreg">Use diiferent one or <a href="Log-in.html">Login here</a></p>'
+            } else {
+                document.getElementById("noreg").innerHTML = '<p class = "noreg">Registraion completed succesfully</p>\n\
+           <p class = "noreg"><a href="Log-in.html">Login here</a></p>';
+            }
+        }
+          else if (action === "cart_book") {
+            var reg = responseXML.getElementsByTagName("cart_book")[0];
+            var result = reg.getElementsByTagName("Result")[0];
+            
+        }  else if (action === "request") {
+            var reg = responseXML.getElementsByTagName("request")[0];
+            var result = reg.getElementsByTagName("Result")[0];
+            
+        }   else if (action === "reg") {
+            var reg = responseXML.getElementsByTagName("Reg")[0];
+            var result = reg.getElementsByTagName("Result")[0];
+            if (result.childNodes[0].nodeValue == 0) {
+                document.getElementById("noreg").innerHTML = '<p class = "noreg">Email is already registered. </p>\n\
+           <p class = "noreg">Use diiferent one or <a href="Log-in.html">Login here</a></p>'
+            } else {
+                document.getElementById("noreg").innerHTML = '<p class = "noreg">Registraion completed succesfully</p>\n\
+           <p class = "noreg"><a href="Log-in.html">Login here</a></p>';
+            }
+            }
+        else if (action === "forgot") {
+            var reg = responseXML.getElementsByTagName("forgot")[0];
+            var result = reg.getElementsByTagName("Result")[0];
+            if (result.childNodes[0].nodeValue == 0) {
+                document.getElementById("passresult").innerHTML = '<p class = "noreg">Email is not registered. </p>\n\
+           <p class = "noreg">Use diiferent one or <a href="Register.html">Register here</a></p>'
+            } else {
+                document.getElementById('passresult').innerHTML = "Password has been changed succesfully";
+            }
+        }
+        else if(action==="pay"){
+            var pay = responseXML.getElementsByTagName("pay")[0];
+            var res = pay.getElementsByTagName("Order")[0];
+            alert("Order was added succesfully, Order number: "+res.childNodes[0].nodeValue);
+        }
+    }
+}
+
+
+
